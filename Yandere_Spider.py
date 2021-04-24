@@ -1,14 +1,16 @@
-import urllib.request
+﻿import urllib.request
 import urllib.parse
 import requests
 import re
 from bs4 import BeautifulSoup
 from Mylog import Mylog as mylog
+from UserAgent import UserAgent
 import codecs
 from pathlib import Path
 import threading
 import time
 import random
+import os
 
 # 图片信息
 class Yandere_Pic_Info(object):
@@ -75,6 +77,8 @@ class Download_Requirements(object):
 			# 获得存储路径
 			self.download_Path = str(input('请输入存储路径 <不能为空！>: '))
 		self.keyword = self.keyword.lower().replace(' ','_') # 处理关键词，字母小写+替换空格
+		if self.download_Path[-1] != '\\':
+			self.download_Path = self.download_Path + '\\'
 		self.start_URL = 'https://yande.re/post?page=' + str(self.start_Page) + '&tags=' + urllib.parse.quote(self.keyword)
 
 	def Output_Info(self): # 返回当前爬取要求信息的字符串，可用于写入日志或检查
@@ -196,24 +200,36 @@ class Yandere_InfoLink_Download(object):
 				self.succeeded_download = True
 
 			def run(self):
+				# 为下载开始做准备
 				print('开始下载第 %d / %d 张图片 (ID: %s)...'%(self.downloadNum + 1, len(items), items[self.downloadNum].id))
 				self.log.info('开始下载第下载第%d/%d张图片(ID: %s)'%(self.downloadNum + 1, len(items), items[self.downloadNum].id))			
 				pic_name = re.findall(r'yande.re%(.*)?', items[self.downloadNum].url)
 				pic_name = 'yande.re_' + items[self.downloadNum].id + '_' +  urllib.parse.unquote(pic_name[0]) # 处理下载图片名
 				Path(spider_info.download_Path + spider_info.keyword).mkdir(exist_ok=True)
 				path = spider_info.download_Path + spider_info.keyword + '\\' + pic_name
-				file = requests.get(items[self.downloadNum].url)
-				with open(path, 'wb') as f:
-					try:
-						f.write(file.content)
-					except Exception as e:
-						print('下载第 %d / %d 张图片 (ID: %s) 失败。'%(self.downloadNum + 1, len(items), items[self.downloadNum].id))
-						self.log.error('下载第%d/%d张图片(ID: %s)失败'%(self.downloadNum + 1, len(items), items[self.downloadNum].id))
-						self.succeeded_download = False
-					else:
-						print('成功下载第 %d / %d 张图片 (ID: %s) 。'%(self.downloadNum + 1, len(items), items[self.downloadNum].id))
-						self.log.info('成功下载第%d/%d张图片(ID: %s)'%(self.downloadNum + 1, len(items), items[self.downloadNum].id))
-				f.close()
+
+				# 下载过程
+				times = 4
+				while times > 0:
+					file = requests.get(items[self.downloadNum].url)
+					with open(path, 'wb') as f:
+						try:
+							f.write(file.content)
+						except Exception as e:
+							print('下载第 %d / %d 张图片 (ID: %s) 失败。'%(self.downloadNum + 1, len(items), items[self.downloadNum].id))
+							self.log.error('下载第%d/%d张图片(ID: %s)失败'%(self.downloadNum + 1, len(items), items[self.downloadNum].id))
+							self.succeeded_download = False
+							break
+						else:
+							if os.path.getsize(path) > 2**20: # 检查图片是否小于1MB，若小于1MB则再尝试下载三次
+								print('成功下载第 %d / %d 张图片 (ID: %s) 。'%(self.downloadNum + 1, len(items), items[self.downloadNum].id))
+								self.log.info('成功下载第%d/%d张图片(ID: %s)'%(self.downloadNum + 1, len(items), items[self.downloadNum].id))								
+								break
+							else:
+								times -= 1
+					f.close()
+
+				# 子线程结束，状态切换到挂起
 				self.running_status = False
 		
 		# 启动下载线程
@@ -269,12 +285,16 @@ class Yandere_InfoLink_Download(object):
 			time.sleep(self.spider_info.delay_Time)
 		else:
 			time.sleep(random.random()*(-self.spider_info.delay_Time))
+		
+		# 访问头伪装
+		headers_browser_dic = UserAgent().pcUserAgent
+		proxy_dic = {'http':'http://127.0.0.1:8080'}
+		def connWeb(url):
+			proxy_handler = urllib.request.ProxyHandler(proxy_dic)
+			opener = urllib.request.build_opener(proxy_handler)
+			urllib.request.install_opener(opener)
+			headers = {'User-Agent': random.choice(list(headers_browser_dic.values()))}
 
-		headers_browser={
-			'User-Agent':'Mozilla/5.0 (Windows; U; Windows NT 6.1; en-us) AppleWebKit/534.50 (KHTML, like Gecko) Version/5.1 Safari/534.50',
-			'Referer':'https://yande.re/',
-			'Connection':'keep-alive'
-		}
 		urlList = url.split('=')
 		try:
 			req = urllib.request.Request(url,headers = headers_browser)
@@ -288,8 +308,9 @@ class Yandere_InfoLink_Download(object):
 
 
 if __name__ == '__main__':
+	print('yande.re Spider')
 	print('制作: Akiha Tatsu in USTC\t2021/4/23')
-	print('Ver: 1.0.0\n')
+	print('Ver: 1.0.1\n')
 	Requirements = Download_Requirements()
 	Requirements.Get_Requirements()
 	print(Requirements.Output_Info())
