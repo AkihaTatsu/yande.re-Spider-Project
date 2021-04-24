@@ -148,7 +148,6 @@ class Yandere_InfoLink_Download(object):
 			if htmlContent == None:
 				print('解析失败。')
 			soup = BeautifulSoup(htmlContent, 'lxml')
-			print(soup)
 			pic_tags = soup.find('script', attrs={'type':'text/javascript'}, text=re.compile(r"Post.register(\s\w+)?")).string.split('\n')
 			
 			# 用正则表达式解析下载链接所在的JavaScript
