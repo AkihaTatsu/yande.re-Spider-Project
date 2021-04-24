@@ -1,4 +1,4 @@
-﻿import urllib.request
+import urllib.request
 import urllib.parse
 import requests
 import re
@@ -22,6 +22,7 @@ class Yandere_Pic_Info(object):
 	author = None
 	source = None
 	md5 = None
+	rating = None
 
 
 # 获得下载要求
@@ -33,6 +34,7 @@ class Download_Requirements(object):
 		self.delay_Time = 0			# 爬虫间隔
 		self.thread_Num = 1			# 线程数量
 		self.min_Score = 0			# 爬取图片评分最低值
+		self.rating = [True, True, True]		# 爬取图片分级
 		self.download_Path = None	# 存储路径
 		self.start_URL = None		# 下载页面起始路径（由信息自动生成）
 
@@ -74,6 +76,12 @@ class Download_Requirements(object):
 			test_Character = str(input('请输入爬取评分最低值（默认为0）: ')) # 用于检测输入是否为空
 			if test_Character != '':
 				self.min_Score = int(test_Character)
+			# 获得爬取分级
+			test_Character = str(input('请输入爬取分级（输入三个连续的0或1，如011，分别代表safe、questionable和explicit）（默认为111）: '))
+			if test_Character != '':
+				self.rating[0] = (test_Character[0] == '1')
+				self.rating[1] = (test_Character[1] == '1')
+				self.rating[2] = (test_Character[2] == '1')
 			# 获得存储路径
 			self.download_Path = str(input('请输入存储路径 <不能为空！>: '))
 		self.keyword = self.keyword.lower().replace(' ','_') # 处理关键词，字母小写+替换空格
@@ -159,10 +167,18 @@ class Yandere_InfoLink_Download(object):
 				match_Score = re.findall(r'"score":.*?,', pic_tag) # 获取图片的评分
 				if match_Score:
 					item.score = int(match_Score[0][8:-1])
+				match_Rating = re.findall(r'"rating":".*?"', pic_tag) # 获取图片的分级
+				if match_Rating:
+					if match_Rating[0][10] == 's':
+						item.rating = 0
+					elif match_Rating[0][10] == 'q':
+						item.rating = 1
+					elif match_Rating[0][10] == 'e':
+						item.rating = 2
 				match_URL = re.findall(r'"file_url":".*?"', pic_tag) # 获取图片的下载URL
 				if match_URL:
 					item.url = match_URL[0][12:-1]
-				if item.score and item.score >= spider_info.min_Score: # 检查是否符合要求，符合要求则加入下载队列
+				if item.score and item.score >= spider_info.min_Score and spider_info.rating[item.rating]: # 检查是否符合要求，符合要求则加入下载队列
 					items.append(item)
 			
 			print('解析成功。')
@@ -206,7 +222,9 @@ class Yandere_InfoLink_Download(object):
 				print('开始下载第 %d / %d 张图片 (ID: %s)...'%(self.downloadNum + 1, len(items), items[self.downloadNum].id))
 				self.log.info('开始下载第下载第%d/%d张图片(ID: %s)'%(self.downloadNum + 1, len(items), items[self.downloadNum].id))			
 				pic_name = re.findall(r'yande.re%(.*)?', items[self.downloadNum].url)
-				pic_name = 'yande.re_' + items[self.downloadNum].id + '_' +  urllib.parse.unquote(pic_name[0]) # 处理下载图片名
+				rating = ['safe', 'questionable', 'explicit']
+				pic_name = 'yande.re_' + items[self.downloadNum].id + '_' + rating[items[self.downloadNum].rating] + '_' +  urllib.parse.unquote(pic_name[0]) # 处理下载图片名
+				pic_name = pic_name.replace('/','').replace('\\','').replace(':','').replace('?','').replace('*','').replace('<','').replace('>','').replace('|','') # 去掉违法符号
 				Path(spider_info.download_Path + spider_info.keyword).mkdir(exist_ok=True)
 				path = spider_info.download_Path + spider_info.keyword + '\\' + pic_name
 
@@ -266,8 +284,6 @@ class Yandere_InfoLink_Download(object):
 				failed_pics.append(items[t.downloadNum])
 
 		# 存储下载失败图片信息
-		time.sleep(5) # 等待五秒，避免子线程结束与检查不同步
-		print('%s 个图片下载成功，%s 个图片下载失败。'%(str(succeeded), str(len(items) - succeeded)))
 		if(len(items) - succeeded > 0):
 			print('\n正在存储下载失败图片信息...')
 			path = str(spider_info.download_Path) + '下载失败图片信息.txt'
@@ -281,7 +297,7 @@ class Yandere_InfoLink_Download(object):
 					else:
 						self.log.info('ID为<<%s>>的图片信息写入到"%s"成功'%(item.id, '下载失败图片信息.txt'))
 			print('存储成功。')
-
+		print('共计%s 个图片下载成功，%s 个图片下载失败。'%(str(succeeded), str(len(items) - succeeded)))
 
 
 	def getResponseContent(self, url): # 分析URL并取得HTML内容
@@ -314,8 +330,10 @@ class Yandere_InfoLink_Download(object):
 if __name__ == '__main__':
 	print('yande.re Spider')
 	print('制作: Akiha Tatsu in USTC\t2021/4/23')
-	print('Ver: 1.0.2\n')
+	print('Ver: 1.0.3\n')
+	print('提醒：请务必按照格式输入！')
 	Requirements = Download_Requirements()
 	Requirements.Get_Requirements()
 	print(Requirements.Output_Info())
 	Spider = Yandere_InfoLink_Download(Requirements)
+	input('按回车键结束...') # 程序结束后暂停
