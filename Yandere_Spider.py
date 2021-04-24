@@ -1,4 +1,4 @@
-﻿import urllib.request
+import urllib.request
 import urllib.parse
 import requests
 import re
@@ -112,7 +112,10 @@ class Yandere_InfoLink_Download(object):
 		if self.spider_info.max_Page == 0: # max_Page=0，此时获取当前关键词下的最大页数
 			soup = BeautifulSoup(htmlContent, 'lxml')
 			last_page_url = soup.find('link', title = 'Last Page')
-			self.spider_info.max_Page = int(soup.find('a', href = last_page_url['href']).string)
+			if last_page_url:
+				self.spider_info.max_Page = int(soup.find('a', href = last_page_url['href']).string)
+			else: # 只有一页
+				self.spider_info.max_Page = 1
 
 		self.urls = self.getPageUrls(self.spider_info)
 		self.pic_infos = self.spider(self.urls, self.spider_info)
@@ -145,6 +148,7 @@ class Yandere_InfoLink_Download(object):
 			if htmlContent == None:
 				print('解析失败。')
 			soup = BeautifulSoup(htmlContent, 'lxml')
+			print(soup)
 			pic_tags = soup.find('script', attrs={'type':'text/javascript'}, text=re.compile(r"Post.register(\s\w+)?")).string.split('\n')
 			
 			# 用正则表达式解析下载链接所在的JavaScript
@@ -189,7 +193,6 @@ class Yandere_InfoLink_Download(object):
 
 		# 定义下载线程
 		class download_Thread(threading.Thread):
-
 			def __init__(self, threadID, downloadNum, items, log):
 				threading.Thread.__init__(self)
 				self.threadID = threadID
@@ -262,6 +265,7 @@ class Yandere_InfoLink_Download(object):
 				failed_pics.append(items[t.downloadNum])
 
 		# 存储下载失败图片信息
+		time.sleep(5) # 等待五秒，避免子线程结束与检查不同步
 		print('%s 个图片下载成功，%s 个图片下载失败。'%(str(succeeded), str(len(items) - succeeded)))
 		if(len(items) - succeeded > 0):
 			print('\n正在存储下载失败图片信息...')
@@ -288,16 +292,15 @@ class Yandere_InfoLink_Download(object):
 		
 		# 访问头伪装
 		headers_browser_dic = UserAgent().pcUserAgent
-		proxy_dic = {'http':'http://127.0.0.1:8080'}
-		def connWeb(url):
-			proxy_handler = urllib.request.ProxyHandler(proxy_dic)
-			opener = urllib.request.build_opener(proxy_handler)
-			urllib.request.install_opener(opener)
-			headers = {'User-Agent': random.choice(list(headers_browser_dic.values()))}
+		# proxy_dic = {'http':'http://127.0.0.1:8080'}
+		# proxy_handler = urllib.request.ProxyHandler(proxy_dic)
+		# opener = urllib.request.build_opener(proxy_handler)
+		# urllib.request.install_opener(opener)
+		headers = {'User-Agent': random.choice(list(headers_browser_dic.values()))}
 
 		urlList = url.split('=')
 		try:
-			req = urllib.request.Request(url,headers = headers_browser)
+			req = urllib.request.Request(url,headers = headers)
 			response = urllib.request.urlopen(req)
 		except:
 			self.log.error('Python返回URL: %s 数据失败'%url)
@@ -310,7 +313,7 @@ class Yandere_InfoLink_Download(object):
 if __name__ == '__main__':
 	print('yande.re Spider')
 	print('制作: Akiha Tatsu in USTC\t2021/4/23')
-	print('Ver: 1.0.1\n')
+	print('Ver: 1.0.2\n')
 	Requirements = Download_Requirements()
 	Requirements.Get_Requirements()
 	print(Requirements.Output_Info())
