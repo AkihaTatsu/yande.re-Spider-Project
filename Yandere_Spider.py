@@ -1,4 +1,4 @@
-import urllib.request
+﻿import urllib.request
 import urllib.parse
 import requests
 import re
@@ -221,15 +221,17 @@ class Yandere_InfoLink_Download(object):
 							print('下载第 %d / %d 张图片 (ID: %s) 失败。'%(self.downloadNum + 1, len(items), items[self.downloadNum].id))
 							self.log.error('下载第%d/%d张图片(ID: %s)失败'%(self.downloadNum + 1, len(items), items[self.downloadNum].id))
 							self.succeeded_download = False
+							f.close()
 							break
 						else:
+							f.close()
 							if os.path.getsize(path) > 2**20: # 检查图片是否小于1MB，若小于1MB则再尝试下载三次
 								print('成功下载第 %d / %d 张图片 (ID: %s) 。'%(self.downloadNum + 1, len(items), items[self.downloadNum].id))
 								self.log.info('成功下载第%d/%d张图片(ID: %s)'%(self.downloadNum + 1, len(items), items[self.downloadNum].id))								
 								break
 							else:
 								times -= 1
-					f.close()
+								time.sleep(1)
 
 				# 子线程结束，状态切换到挂起
 				self.running_status = False
