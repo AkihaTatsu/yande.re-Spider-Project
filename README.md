@@ -9,6 +9,6 @@ A personal development of the experiment of the Data Analysis course of USTC.
 
 **でも、一番大事なのはこのプロジェクトをここにアップロードして記念になります~**
 
-### About Updates
+## About Updates
 
 请在版本更新与计划中查看。
