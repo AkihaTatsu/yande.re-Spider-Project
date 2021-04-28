@@ -55,7 +55,7 @@ class Download_Requirements(object):
 				for i in range(0, self.keyword_Num - 1):
 					self.extra_Keyword.append(file_Content[i + 2])
 			self.filtered_Keyword_Num = int(file_Content[self.keyword_Num + 1])
-			if self.filtered_Keyword_Num > 1:
+			if self.filtered_Keyword_Num > 0:
 				for i in range(0, self.filtered_Keyword_Num):
 					self.filtered_Keyword.append(file_Content[self.keyword_Num + 2 + i])
 			self.download_Path = file_Content[self.keyword_Num + self.filtered_Keyword_Num + 2]
