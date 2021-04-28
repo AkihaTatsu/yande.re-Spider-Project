@@ -17,8 +17,7 @@ class Mylog(object):
 		# 日志输出到相关文件内
 		self.logHand = logging.FileHandler(self.logFile, encoding='utf8')
 		self.logHand.setFormatter(self.formatter)
-		self.logHand.setLevel(logging.DEBUG)
-		
+		self.logHand.setLevel(logging.DEBUG)	
 		
 		# self.logHandSt = logging.StreamHandler()
 		# self.logHandSt.setFormatter(self.formatter)
