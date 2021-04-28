@@ -3,12 +3,12 @@ A personal development of the experiment of the Data Analysis course of USTC.
 
 ## Introduction
 
-古话说得好，搞黄色是人类最大的生产力（大嘘）。
+**Disclaimer: This project is intended to study the beautifulsoup and html frameworks. Do not use it for commercial or other personal intentions. If used improperly, it will be the individuals bear.**
 
-这是一个yande.re的爬虫，我会尽量为其慢慢添加各种附带功能，修复bug（并添加更多bug）。
-
-**でも、一番大事なのはこのプロジェクトをここにアップロードして記念になります~**
+This is a python spider which could download yande.re pictures.
 
 ## About Updates
 
-请在版本更新与计划中查看。
+Please view it in "版本更新与计划.log".
+
+**でも、一番大事なのはこのプロジェクトをここにアップロードして記念になります~**
