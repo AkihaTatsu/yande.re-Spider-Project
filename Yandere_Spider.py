@@ -28,139 +28,139 @@ class Yandere_Pic_Info(object):
 
 # 获得下载要求
 class Download_Requirements(object):
-    def __init__(self):
-        self.keyword_Num = 1        # 关键词数量
-        self.keyword = None            # 第一个关键词
-        self.extra_Keyword = []        # 更多的关键词
-        self.filtered_Keyword_Num = 0            # 屏蔽的关键词数量
-        self.filtered_Keyword = []    # 屏蔽的关键词
-        self.start_Page = 1            # 开始页码
-        self.max_Page = 0            # 结束页码，0代表自动获取最大页码
-        self.delay_Time = -10        # 爬虫间隔
-        self.thread_Num = 5            # 线程数量
-        self.min_Score = 0            # 爬取图片评分最低值
-        self.rating = [True, True, True]        # 爬取图片分级
-        self.download_Path = None    # 存储路径
-        self.start_URL = None        # 下载页面起始路径（由信息自动生成）
+	def __init__(self):
+		self.keyword_Num = 1		# 关键词数量
+		self.keyword = None			# 第一个关键词
+		self.extra_Keyword = []		# 更多的关键词
+		self.filtered_Keyword_Num = 0			# 屏蔽的关键词数量
+		self.filtered_Keyword = []	# 屏蔽的关键词
+		self.start_Page = 1			# 开始页码
+		self.max_Page = 0			# 结束页码，0代表自动获取最大页码
+		self.delay_Time = -10		# 爬虫间隔
+		self.thread_Num = 5			# 线程数量
+		self.min_Score = 0			# 爬取图片评分最低值
+		self.rating = [True, True, True]		# 爬取图片分级
+		self.download_Path = None	# 存储路径
+		self.start_URL = None		# 下载页面起始路径（由信息自动生成）
 
-    def Get_Requirements(self):
-        test_Character = str(input('是否使用文件中已有预设？(Y/N): '))
-        if test_Character == 'Y' or test_Character == 'y': # 使用文件中预设
-            file_Name = str(input('请输入预设文件名: '))
-            file = open(file_Name, 'r')
-            file_Content = file.read().split('\n')
-            self.keyword_Num = int(file_Content[0])
-            self.keyword = file_Content[1]
-            if self.keyword_Num > 1:
-                for i in range(0, self.keyword_Num - 1):
-                    self.extra_Keyword.append(file_Content[i + 2])
-            self.filtered_Keyword_Num = int(file_Content[self.keyword_Num + 1])
-            if self.filtered_Keyword_Num > 0:
-                for i in range(0, self.filtered_Keyword_Num):
-                    self.filtered_Keyword.append(file_Content[self.keyword_Num + 2 + i])
-            self.download_Path = file_Content[self.keyword_Num + self.filtered_Keyword_Num + 2]
-            self.start_Page = int(file_Content[self.keyword_Num + self.filtered_Keyword_Num + 3])
-            self.max_Page = int(file_Content[self.keyword_Num + self.filtered_Keyword_Num + 4])
-            self.delay_Time = int(file_Content[self.keyword_Num + self.filtered_Keyword_Num + 5])
-            self.thread_Num = int(file_Content[self.keyword_Num + self.filtered_Keyword_Num + 6])
-            self.min_Score = int(file_Content[self.keyword_Num + self.filtered_Keyword_Num + 7])
-            test_Character = file_Content[self.keyword_Num + self.filtered_Keyword_Num + 8]
-            if test_Character != '':
-                self.rating[0] = (test_Character[0] == '1')
-                self.rating[1] = (test_Character[1] == '1')
-                self.rating[2] = (test_Character[2] == '1')
-        else: # 使用自定义输入预设
-            # 获得关键词数量
-            test_Character = str(input('请输入关键词数量（默认为1）: ')) # 用于检测输入是否为空
-            if test_Character != '':
-                self.keyword_Num = int(test_Character)
-            # 获得关键词
-            if self.keyword_Num == 1:
-                self.keyword = str(input('请输入关键词 <不能为空！>: '))
-            else:
-                self.keyword = str(input('请输入关键词 <不能为空！>: \n'))
-                for i in range(0, self.keyword_Num - 1):
-                    self.extra_Keyword.append(str(input()))
-            # 获得屏蔽关键词数量
-            test_Character = str(input('请输入需屏蔽的关键词数量（默认为0）: ')) # 用于检测输入是否为空
-            if test_Character != '':
-                self.filtered_Keyword_Num = int(test_Character)
-            # 获得屏蔽关键词
-            if self.filtered_Keyword_Num == 1:
-                self.filtered_Keyword.append(str(input('请输入需屏蔽的关键词 <不能为空！>: ')))
-            elif self.filtered_Keyword_Num > 1:
-                self.filtered_Keyword.append(str(input('请输入需屏蔽的关键词 <不能为空！>: \n')))
-                for i in range(0, self.filtered_Keyword_Num - 1):
-                    self.filtered_Keyword.append(str(input()))
-            # 获得存储路径
-            self.download_Path = str(input('请输入存储路径 <不能为空！>: '))
-            # 获得起始页码
-            test_Character = str(input('请输入起始页码（相对于第一个关键词，默认为1）: ')) # 用于检测输入是否为空
-            if test_Character != '':
-                self.start_Page = int(test_Character)
-            # 获得结束页码
-            test_Character = str(input('请输入结束页码（相对于第一个关键词，默认为0，即自动获取最大页码）: ')) # 用于检测输入是否为空
-            if test_Character != '':
-                self.max_Page = int(test_Character)
-                if self.max_Page < self.start_Page:
-                    self.max_Page = 0
-            # 获得爬虫间隔
-            test_Character = str(input('请输入爬取时间间隔（单位：s）（默认为-10，-n代表在0到n间产生一个随机数）: ')) # 用于检测输入是否为空
-            if test_Character != '':
-                self.delay_Time = int(test_Character)
-            # 获得线程数量
-            test_Character = str(input('请输入线程数量（默认为5）: ')) # 用于检测输入是否为空
-            if test_Character != '':
-                self.thread_Num = int(test_Character)
-            # 获得爬取评分最低值
-            test_Character = str(input('请输入爬取评分最低值（默认为0）: ')) # 用于检测输入是否为空
-            if test_Character != '':
-                self.min_Score = int(test_Character)
-            # 获得爬取分级
-            test_Character = str(input('请输入爬取分级（输入三个连续的0或1，如011，分别代表safe、questionable和explicit）（默认为111）: '))
-            if test_Character != '':
-                self.rating[0] = (test_Character[0] == '1')
-                self.rating[1] = (test_Character[1] == '1')
-                self.rating[2] = (test_Character[2] == '1')
+	def Get_Requirements(self):
+		test_Character = str(input('是否使用文件中已有预设？(Y/N): '))
+		if test_Character == 'Y' or test_Character == 'y': # 使用文件中预设
+			file_Name = str(input('请输入预设文件名: '))
+			file = open(file_Name, 'r')
+			file_Content = file.read().split('\n')
+			self.keyword_Num = int(file_Content[0])
+			self.keyword = file_Content[1]
+			if self.keyword_Num > 1:
+				for i in range(0, self.keyword_Num - 1):
+					self.extra_Keyword.append(file_Content[i + 2])
+			self.filtered_Keyword_Num = int(file_Content[self.keyword_Num + 1])
+			if self.filtered_Keyword_Num > 0:
+				for i in range(0, self.filtered_Keyword_Num):
+					self.filtered_Keyword.append(file_Content[self.keyword_Num + 2 + i])
+			self.download_Path = file_Content[self.keyword_Num + self.filtered_Keyword_Num + 2]
+			self.start_Page = int(file_Content[self.keyword_Num + self.filtered_Keyword_Num + 3])
+			self.max_Page = int(file_Content[self.keyword_Num + self.filtered_Keyword_Num + 4])
+			self.delay_Time = int(file_Content[self.keyword_Num + self.filtered_Keyword_Num + 5])
+			self.thread_Num = int(file_Content[self.keyword_Num + self.filtered_Keyword_Num + 6])
+			self.min_Score = int(file_Content[self.keyword_Num + self.filtered_Keyword_Num + 7])
+			test_Character = file_Content[self.keyword_Num + self.filtered_Keyword_Num + 8]
+			if test_Character != '':
+				self.rating[0] = (test_Character[0] == '1')
+				self.rating[1] = (test_Character[1] == '1')
+				self.rating[2] = (test_Character[2] == '1')
+		else: # 使用自定义输入预设
+			# 获得关键词数量
+			test_Character = str(input('请输入关键词数量（默认为1）: ')) # 用于检测输入是否为空
+			if test_Character != '':
+				self.keyword_Num = int(test_Character)
+			# 获得关键词
+			if self.keyword_Num == 1:
+				self.keyword = str(input('请输入关键词 <不能为空！>: '))
+			else:
+				self.keyword = str(input('请输入关键词 <不能为空！>: \n'))
+				for i in range(0, self.keyword_Num - 1):
+					self.extra_Keyword.append(str(input()))
+			# 获得屏蔽关键词数量
+			test_Character = str(input('请输入需屏蔽的关键词数量（默认为0）: ')) # 用于检测输入是否为空
+			if test_Character != '':
+				self.filtered_Keyword_Num = int(test_Character)
+			# 获得屏蔽关键词
+			if self.filtered_Keyword_Num == 1:
+				self.filtered_Keyword.append(str(input('请输入需屏蔽的关键词 <不能为空！>: ')))
+			elif self.filtered_Keyword_Num > 1:
+				self.filtered_Keyword.append(str(input('请输入需屏蔽的关键词 <不能为空！>: \n')))
+				for i in range(0, self.filtered_Keyword_Num - 1):
+					self.filtered_Keyword.append(str(input()))
+			# 获得存储路径
+			self.download_Path = str(input('请输入存储路径 <不能为空！>: '))
+			# 获得起始页码
+			test_Character = str(input('请输入起始页码（相对于第一个关键词，默认为1）: ')) # 用于检测输入是否为空
+			if test_Character != '':
+				self.start_Page = int(test_Character)
+			# 获得结束页码
+			test_Character = str(input('请输入结束页码（相对于第一个关键词，默认为0，即自动获取最大页码）: ')) # 用于检测输入是否为空
+			if test_Character != '':
+				self.max_Page = int(test_Character)
+				if self.max_Page < self.start_Page:
+					self.max_Page = 0
+			# 获得爬虫间隔
+			test_Character = str(input('请输入爬取时间间隔（单位：s）（默认为-10，-n代表在0到n间产生一个随机数）: ')) # 用于检测输入是否为空
+			if test_Character != '':
+				self.delay_Time = int(test_Character)
+			# 获得线程数量
+			test_Character = str(input('请输入线程数量（默认为5）: ')) # 用于检测输入是否为空
+			if test_Character != '':
+				self.thread_Num = int(test_Character)
+			# 获得爬取评分最低值
+			test_Character = str(input('请输入爬取评分最低值（默认为0）: ')) # 用于检测输入是否为空
+			if test_Character != '':
+				self.min_Score = int(test_Character)
+			# 获得爬取分级
+			test_Character = str(input('请输入爬取分级（输入三个连续的0或1，如011，分别代表safe、questionable和explicit）（默认为111）: '))
+			if test_Character != '':
+				self.rating[0] = (test_Character[0] == '1')
+				self.rating[1] = (test_Character[1] == '1')
+				self.rating[2] = (test_Character[2] == '1')
 
-        # 处理关键词，字母小写+替换空格
-        self.keyword = self.keyword.lower().replace(' ','_')
-        for i in range(0, len(self.extra_Keyword)):
-            self.extra_Keyword[i] = self.extra_Keyword[i].lower().replace(' ','_')            
-        for i in range(0, len(self.filtered_Keyword)):
-            self.filtered_Keyword[i] = self.filtered_Keyword[i].lower().replace(' ','_')        
+		# 处理关键词，字母小写+替换空格
+		self.keyword = self.keyword.lower().replace(' ','_')
+		for i in range(0, len(self.extra_Keyword)):
+			self.extra_Keyword[i] = self.extra_Keyword[i].lower().replace(' ','_')			
+		for i in range(0, len(self.filtered_Keyword)):
+			self.filtered_Keyword[i] = self.filtered_Keyword[i].lower().replace(' ','_')		
 
-        if self.download_Path[-1] != '\\':
-            self.download_Path = self.download_Path + '\\'
-        self.start_URL = 'https://yande.re/post?page=' + str(self.start_Page) + '&tags=' + urllib.parse.quote(self.keyword)
+		if self.download_Path[-1] != '\\':
+			self.download_Path = self.download_Path + '\\'
+		self.start_URL = 'https://yande.re/post?page=' + str(self.start_Page) + '&tags=' + urllib.parse.quote(self.keyword)
 
-    def Output_Info(self): # 返回当前爬取要求信息的字符串，可用于写入日志或检查
-        output_Str = ''
+	def Output_Info(self): # 返回当前爬取要求信息的字符串，可用于写入日志或检查
+		output_Str = ''
 
-        if self.keyword_Num == 1:
-            output_Str += '\r\n关键词: ' + str(self.keyword)
-        else:
-            output_Str += '\r\n关键词: \r\n' + str(self.keyword)
-            for kw in self.extra_Keyword:
-                output_Str += '\r\n' + kw
-        
-        if self.filtered_Keyword_Num == 1:
-            output_Str += '\r\n需屏蔽的关键词: ' + str(self.filtered_Keyword[0])
-        elif self.filtered_Keyword_Num > 1:
-            output_Str += '\r\n需屏蔽的关键词:'
-            for kw in self.filtered_Keyword:
-                output_Str += '\r\n' + kw
+		if self.keyword_Num == 1:
+			output_Str += '\r\n关键词: ' + str(self.keyword)
+		else:
+			output_Str += '\r\n关键词: \r\n' + str(self.keyword)
+			for kw in self.extra_Keyword:
+				output_Str += '\r\n' + kw
+		
+		if self.filtered_Keyword_Num == 1:
+			output_Str += '\r\n需屏蔽的关键词: ' + str(self.filtered_Keyword[0])
+		elif self.filtered_Keyword_Num > 1:
+			output_Str += '\r\n需屏蔽的关键词:'
+			for kw in self.filtered_Keyword:
+				output_Str += '\r\n' + kw
 
-        output_Str = output_Str\
-                   + '\r\n起始页码: ' + str(self.start_Page)\
-                   + '\r\n结束页码: ' + str(self.max_Page)\
-                   + '\r\n爬取时间间隔: ' + str(self.delay_Time)\
-                   + '\r\n线程数量: ' + str(self.thread_Num)\
-                   + '\r\n爬取评分最低值: ' + str(self.min_Score)\
-                   + '\r\n爬取分级: ' + 'Safe: ' + str(self.rating[0]) + ' | Questionable: ' + str(self.rating[1]) + ' | Explicit: ' + str(self.rating[2])\
-                   + '\r\n存储路径: ' + str(self.download_Path)\
-                   + '\r\n起始爬取URL: ' + str(self.start_URL) + '\r\n'
-        return output_Str
+		output_Str = output_Str\
+				   + '\r\n起始页码: ' + str(self.start_Page)\
+				   + '\r\n结束页码: ' + str(self.max_Page)\
+				   + '\r\n爬取时间间隔: ' + str(self.delay_Time)\
+				   + '\r\n线程数量: ' + str(self.thread_Num)\
+				   + '\r\n爬取评分最低值: ' + str(self.min_Score)\
+				   + '\r\n爬取分级: ' + 'Safe: ' + str(self.rating[0]) + ' | Questionable: ' + str(self.rating[1]) + ' | Explicit: ' + str(self.rating[2])\
+				   + '\r\n存储路径: ' + str(self.download_Path)\
+				   + '\r\n起始爬取URL: ' + str(self.start_URL) + '\r\n'
+		return output_Str
 
 
 
