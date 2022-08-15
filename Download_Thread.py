@@ -4,7 +4,6 @@ import urllib.request
 import urllib.parse
 from UserAgent import UserAgent
 import requests
-from bs4 import BeautifulSoup
 
 import time
 import random
@@ -62,25 +61,17 @@ class Download_Thread_HTML(threading.Thread):
         
         times = 4
         while times > 0:
-            if self.args.proxy_type == '' or self.args.proxy == '':
-                html_content = get_response_content(
-                    url=self.url, 
-                    delay_time=self.args.delay_time, 
-                    if_randomize_time=self.args.if_randomize_time, 
-                    log=self.log,
-                )
-            else:
-                html_content = get_response_content(
-                    url=self.url, 
-                    delay_time=self.args.delay_time, 
-                    if_randomize_time=self.args.if_randomize_time, 
-                    log=self.log,
-                    proxy={self.args.proxy_type: self.args.proxy}
-                )
+            html_content = get_response_content(
+                url=self.url, 
+                delay_time=self.args.delay_time, 
+                if_randomize_time=self.args.if_randomize_time, 
+                log=self.log,
+                proxy=None if (self.args.proxy_type == '' or self.args.proxy == '') else {self.args.proxy_type: self.args.proxy}
+            )
             if html_content is None:
-                self.log.info('Retrying URL (%d times left): %s'%(times, self.url))
                 times -= 1
-                time.sleep(1)
+                self.log.warning('Retrying URL (%d times left): %s'%(times, self.url))
+                time.sleep(30)  # 重试间隔60s
             else:
                 break
 
@@ -102,6 +93,19 @@ class Download_Thread_HTML(threading.Thread):
         return self._return
 
 
+# 生成图片存储路径
+def generate_pic_path_name(item, args):
+    pic_name = re.findall(r'yande.re%(.*)?', item.url)
+    rating = ['safe', 'questionable', 'explicit']
+    pic_name = 'yande.re_' + item.id + '_' + rating[item.rating] + '_' +  urllib.parse.unquote(pic_name[0]) # 处理下载图片名
+    pic_name = pic_name.replace('/','').replace('"','').replace('\\','').replace(':','').replace('?','').replace('*','').replace('<','').replace('>','').replace('|','')  # 去掉违法符号
+    keywords = ' '.join(args.keywords)
+    Path(os.path.join(args.path, keywords)).mkdir(exist_ok=True)
+
+    return os.path.join(args.path, keywords, ''), pic_name
+
+
+
 # 图片批量下载线程
 class Download_Thread_Pics(threading.Thread):
     def __init__(self, item, args, log, threadID):
@@ -116,15 +120,10 @@ class Download_Thread_Pics(threading.Thread):
 
 
     def run(self):
-        self.log.info('Downloading picture from URL: %s'%self.item.url)
+        self.log.info('Downloading picture ID: %s from URL: %s'%(self.item.id, self.item.url))
         
-        pic_name = re.findall(r'yande.re%(.*)?', self.item.url)
-        rating = ['safe', 'questionable', 'explicit']
-        pic_name = 'yande.re_' + self.item.id + '_' + rating[self.item.rating] + '_' +  urllib.parse.unquote(pic_name[0]) # 处理下载图片名
-        pic_name = pic_name.replace('/','').replace('"','').replace('\\','').replace(':','').replace('?','').replace('*','').replace('<','').replace('>','').replace('|','')  # 去掉违法符号
-        keywords = ' '.join(self.args.keywords)
-        Path(os.path.join(self.args.path, keywords)).mkdir(exist_ok=True)
-        path = os.path.join(self.args.path, keywords) + '\\' + pic_name
+        folder_path, pic_name = generate_pic_path_name(self.item, self.args)
+        path = os.path.join(folder_path, pic_name)
 
         # 下载过程
         try:
@@ -149,17 +148,28 @@ class Download_Thread_Pics(threading.Thread):
                             for data in file.iter_content(chunk_size=1024):
                                 size = f.write(data)
                                 pbar.update(size)
-                    except Exception as e:
-                        f.close() #  文件打印失败，再次尝试
+                    except Exception as e:  # 文件存储到本地失败，再次尝试
+                        self.log.warning(f'Error {e}, retrying download picture {self.item.id} ({times} times left): %s')
+                        f.close()
                         times -= 1
-                        time.sleep(1)
+                        time.sleep(60)  # 重试间隔60s
                     else:
                         f.close()
-                        if os.path.getsize(path) > 2**20:  # 检查图片是否小于1MB，若小于1MB则再尝试下载三次
+
+                        # 检查MD5是否一致，一致则结束
+                        with open(path, 'rb') as fp:
+                            full_data = fp.read()
+                        file_md5 = hashlib.md5(full_data).hexdigest()
+                        if file_md5 == self.item.md5:
                             break
                         else:
+                            self.log.warning(f'File damaged, retrying download picture {self.item.id} ({times} times left): %s')
                             times -= 1
-                            time.sleep(1)
+                            time.sleep(60)  # 重试间隔60s
+
+            if times <= 0:  # 所有下载尝试失败
+                self.log.error(f'All retrial failed, Downloading picture ID: {self.item.id} failed from URL: {self.item.url}')
+                self.succeeded_download = False
         except Exception as e:
             self.log.error(f'Error {e}, Downloading picture ID: {self.item.id} failed from URL: {self.item.url}')
             self.succeeded_download = False

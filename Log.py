@@ -1,16 +1,12 @@
 import logging
 import getpass
-import sys
 import os
-import io
-from io import StringIO
-import datetime
 from pathlib import Path
 
 
 
 class Log():
-    def __init__(self, path):
+    def __init__(self, path, spider_start_time, keywords):
         if not Path(path).exists():
             os.makedirs(path)
 
@@ -19,7 +15,7 @@ class Log():
         self.logger.setLevel(logging.DEBUG)
 
         # 日志文件名
-        self.logFile = os.path.join(path, datetime.datetime.now().strftime('%Y-%m-%d %H_%M_%S Log') + '.log')
+        self.logFile = os.path.join(path, spider_start_time + ' '.join(keywords) + '.log')
         self.formatter = logging.Formatter('%(asctime)-12s %(levelname)-8s %(name)-10s %(message)-12s')
 
         # 日志输出到相关文件内
