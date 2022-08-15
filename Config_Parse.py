@@ -1,4 +1,4 @@
-import os
+﻿import os
 import json
 import argparse
 
@@ -23,7 +23,7 @@ class Spider_Config_Parse(Spider_Config):
     
     # 读取Json进度文件并解析
     def read_config(self, json_name):
-        with open(json_name, 'r+') as f:
+        with open(json_name, 'r+', encoding='utf8') as f:
             self.json_str = f.read()
 
         parsed_str = json.loads(self.json_str)

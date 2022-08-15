@@ -1,4 +1,4 @@
-import json
+﻿import json
 import os
 import datetime
 
@@ -111,6 +111,6 @@ class Spider_Config():
         if json_name is None:  # 设置默认配置文件名
             json_name = self.begin_time + ' '.join(self.args.keywords) + ' config'
 
-        with open(os.path.join(self.args.path, f'{json_name}.json'), 'w+') as f:
+        with open(os.path.join(self.args.path, f'{json_name}.json'), 'w+', encoding='utf8') as f:
             f.write(json_str)
 

@@ -129,6 +129,11 @@ class Download_Thread_Pics(threading.Thread):
         try:
             times = 4
             while times > 0:
+                if self.args.if_randomize_time:  # 需要随机化爬取间隔
+                    time.sleep(random.random()*self.args.delay_time)
+                else:
+                    time.sleep(self.args.delay_time)
+                    
                 if self.args.proxy_type == '' or self.args.proxy == '':
                     file = requests.get(self.item.url, stream=True)
                 else:
