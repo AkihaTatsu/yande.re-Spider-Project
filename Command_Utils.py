@@ -1,4 +1,4 @@
-import argparse
+﻿import argparse
 import os
 
 
@@ -7,8 +7,8 @@ import os
 def parse_args():
     parser = argparse.ArgumentParser(description="# ================== Help ================== #")
 
-    parser.add_argument('--words', type=str, default="", dest="keywords", help="Input keywords; Multiple keywords are separated with ',' symbol")
-    parser.add_argument('--skip-words', type=str, default="", dest="filtered_keywords", help="Input keywords to skip; Multiple keywords are separated with ',' symbol")
+    parser.add_argument('--kw', type=str, default="", dest="keywords", help="Input keywords; Multiple keywords are separated with ',' symbol")
+    parser.add_argument('--skip-kw', type=str, default="", dest="filtered_keywords", help="Input keywords to skip; Multiple keywords are separated with ',' symbol")
     parser.add_argument('--start-page', type=int, default=1, help="First page number")
     parser.add_argument('--finish-page', type=int, default=-1, help="Last page number. Default set to -1 for the last available page")
 
@@ -17,8 +17,8 @@ def parse_args():
     parser.add_argument('-no-e', action="store_true", dest="if_no_explicit", help="Not downloading explicit pictures")
     parser.add_argument('--score', type=int, default=0, dest="min_score", help="Lowest rating score")
     
-    parser.add_argument('--t', type=float, default=10.0, dest="delay_time", help="Delayed time between downloading threads (in seconds)")
-    parser.add_argument('-r', action="store_true", dest="if_randomize_time", help="Randomize delayed time")
+    parser.add_argument('--t', type=float, default=10.0, dest="delay_time", help="Delay time between downloading threads (in seconds)")
+    parser.add_argument('-r', action="store_true", dest="if_randomize_time", help="Randomize delay time. Current delay time will be the upper limit.")
     parser.add_argument('--thread-num', type=int, default=5, help="Number of downloading threads")
     parser.add_argument('--proxy-type', type=str, default='', help="Proxy type (e.g. https)")
     parser.add_argument('--proxy', type=str, default='', help="Proxy setting (e.g. http://127.0.0.1:1080)")
