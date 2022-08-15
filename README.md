@@ -16,6 +16,8 @@ Two types of crawling are provided:
 
 The details of downloading process will be recorded in .log file in the downloading folder. It is recommended to check out errors after downloading finishes.
 
+## Running
+
 ### Download pictures
 Running main.py will start a new downloading project:
 ```bash
