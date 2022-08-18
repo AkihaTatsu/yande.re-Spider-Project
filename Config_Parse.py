@@ -48,7 +48,7 @@ class Spider_Config_Parse(Spider_Config):
             elif self.state == 2:
                 self.pic_infos = []
                 for pic_info in parsed_str['pic_infos']:
-                    self.pic_infos.append(self.dict_to_class(pic_info, Yandere_Pic_Info_Char))
+                    self.pic_infos.append(self.dict_to_class(pic_info, Yandere_Pic_Info))
             elif self.state == 3:
                 self.filtered_pic_infos = []
                 for filtered_pic_info in parsed_str['filtered_pic_infos']:
@@ -68,20 +68,23 @@ class Spider_Config_Parse(Spider_Config):
                 pass
 
             if self.state <= 1:
-                spider.page_urls = self.page_urls
+                if self.state == 1:
+                    spider.page_urls = self.page_urls
                 spider.get_page_html(spider.page_urls)
                 spider.parse_pic_infos(spider.page_html_contents)
             else:
                 pass
 
             if self.state <= 2:
-                spider.pic_infos = self.pic_infos
+                if self.state == 2:
+                    spider.pic_infos = self.pic_infos
                 spider.filter_pic_infos(spider.pic_infos)
             else:
                 pass
 
             if self.state <= 3:
-                spider.filtered_pic_infos = self.filtered_pic_infos
+                if self.state == 3:
+                    spider.filtered_pic_infos = self.filtered_pic_infos
                 spider.download_pics(spider.filtered_pic_infos)
             else:
                 pass
@@ -95,21 +98,24 @@ class Spider_Config_Parse(Spider_Config):
                 pass
 
             if self.state <= 1:
-                spider.page_urls = self.page_urls
+                if self.state == 1:
+                    spider.page_urls = self.page_urls
                 spider.get_page_html(spider.page_urls)
                 spider.parse_pic_infos(spider.page_html_contents)
             else:
                 pass
 
             if self.state <= 2:
-                spider.pic_infos = self.pic_infos
+                if self.state == 2:
+                    spider.pic_infos = self.pic_infos
                 spider.filter_pic_infos(spider.pic_infos)
                 spider.filtered_pic_infos = spider.get_pic_char_tags(spider.filtered_pic_infos)
             else:
                 pass
 
             if self.state <= 3:
-                spider.filtered_pic_infos = self.filtered_pic_infos
+                if self.state == 3:
+                    spider.filtered_pic_infos = self.filtered_pic_infos
                 spider.download_pics(spider.filtered_pic_infos)
                 spider.move_all_pictures(spider.filtered_pic_infos)
             else:
