@@ -108,9 +108,11 @@ class Yandere_Spider_Framework_Character(Yandere_Spider_Framework):
     def move_all_pictures(self, pic_infos):
         self.log.info('Moving pictures to character folders...')
         print('Moving pictures to character folders...')
-        for info in pic_infos:
-            if info.char_tags is not None:
-                self.move_pictures(info)  # 增加移动图片步骤
+        with tqdm(total=len(pic_infos), desc="Moved Pages", ascii=True) as pbar:            
+            for info in pic_infos:
+                if info.char_tags is not None:
+                    self.move_pictures(info)  # 增加移动图片步骤
+                pbar.update(1)
         self.log.info('Moving pictures to character folders finished.')
         print('Moving pictures to character folders finished.')
 
